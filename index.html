@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>درصد درگیری دربندی قوطی فلزی</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; background: linear-gradient(to bottom,#eef2f7,#ffffff); margin:0; padding:6px; color:#333; }
+    header { background:#0077b6; color:#fff; padding:2px; border-radius:8px; text-align:center; margin-bottom:10px; }
+    .info-text { font-size:12px; text-align:center; margin-bottom:10px; }
+
+    .input-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:8px; }
+    .input-row label { font-size:12px; display:flex; flex-direction:column; width:140px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:6px; }
+    .input-row input, .input-row select { margin-top:6px; padding:6px 8px; font-size:14px; border:1px solid #bbb; border-radius:4px; }
+    .input-row button { align-self:flex-end; background:#0077b6; border:none; color:white; padding:10px 20px; border-radius:6px; cursor:pointer; font-size:14px; margin-top:24px; }
+    .input-row button:hover { background:#005f99; }
+
+    .progress-bar-container { width: 90%; max-width: 500px; margin: 10px auto; background: #eee; border-radius: 8px; overflow: hidden; height: 18px; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #0077b6, #00c4cc); transition: width 0.3s; }
+
+    table { width:100%; border-collapse:collapse; margin-top:10px; background:#fff; }
+    th,td { border:1px solid #555; padding:10px; text-align:center; font-size:14px; }
+    th { background:#f0f4f8; font-weight:bold; }
+
+    #warnings { margin-top:20px; }
+    #warnings ul { list-style:none; padding:0; }
+    #warnings li { background:#fff3f3; border:1px solid #ffcccc; padding:8px 12px; margin-bottom:6px; border-radius:5px; color:#c00; font-size:14px; }
+
+    .footer-buttons { position:fixed; left:25px; bottom:25px; display:flex; flex-direction:column; gap:5px; }
+    .footer-buttons button { width:130px; background:#0077b6; border:none; color:#fff; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; }
+    .footer-buttons button:hover { background:#005f99; }
+
+    #helpOverlay {
+      position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);
+      display:flex; justify-content:center; align-items:center; z-index:10000; visibility: hidden;
+    }
+    #helpBox {
+      background:#fff; width: 340px; padding:20px; border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.3); text-align:right; font-family: Tahoma;
+      animation: popIn 0.3s ease forwards;
+    }
+    #helpBox h3 { text-align:center; margin-bottom:10px; color:#0077b6; }
+    #helpBox ul { padding-right: 20px; font-size:14px; line-height:1.7; }
+    #helpBox button {
+      background:#0077b6; color:#fff; padding:6px 14px; border:none;
+      border-radius:6px; cursor:pointer; display:block; margin: 10px auto 0;
+    }
+    @keyframes popIn { from { transform: scale(0.7); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position:absolute; left:0; top:0; width:100%; padding:20px; }
+    }
+
+    #printHeader {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+      padding-bottom: 8px;
+    }
+    #printHeader div {
+      width: 33%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h2>برنامه محاسبه درصد درگیری قوطی فلزی v1.09</h2>
+</header>
+
+<p class="info-text">🔹 تمام مقادیر بر حسب <strong>0.001 اینچ</strong> هستند 🔹</p>
+
+<div style="text-align:center; margin-bottom:8px;">
+  <label>📦 نوع ظرف:
+    <select id="containerType">
+        <option>قوطی 400 گرمی چاپدار</option>
+        <option>قوطی 420 گرمی چاپدار</option>
+        <option>قوطی 770 گرمی چاپدار</option>
+	<option>قوطی 800 گرمی چاپدار</option>
+	<option>قوطی 4000 گرمی چاپدار</option>
+	<option>قوطی 16 کیلویی چاپدار</option>
+        <option>قوطی 400 گرمی ساده</option>
+        <option>قوطی 420 گرمی ساده</option>
+        <option>قوطی 770 گرمی ساده</option>
+	<option>قوطی 800 گرمی ساده</option>
+	<option>قوطی 4000 گرمی ساده</option>
+	<option>قوطی 16 کیلویی ساده</option>
+    </select>
+  </label>
+</div>
+
+<div class="input-row">
+  <label>طول دوخت-SL<input type="number" id="length" min="0" step="0.01"></label>
+  <label>ضخامت دوخت-ST<input type="number" id="seamThickness" min="0" step="0.01"></label>
+  <label>قلاب درب-CH<input type="number" id="coverHook" min="0" step="0.01"></label>
+  <label>قلاب بدنه-BH<input type="number" id="bodyHook" min="0" step="0.01"></label>
+  <label>ضخامت ورق سر-Te<input type="number" id="headThickness" min="0" step="0.01"></label>
+  <label>ضخامت ورق بدنه-Tb<input type="number" id="bodyThickness" min="0" step="0.01"></label>
+  <button type="button" onclick="addTemplate()">➕ محاسبه/جدید</button>
+</div>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progress"></div>
+</div>
+
+<div id="printArea">
+  <div id="printHeader" style="display:none;">
+    <div>📅 تاریخ آنالیز: <span id="analysisDate"></span></div>
+    <div>📦 نوع ظرف: <span id="containerSelected"></span></div>
+    <div>👤 گزارشگر: <span id="reporterName"></span></div>
+  </div>
+
+  <table id="resultsTable">
+    <thead>
+      <tr id="headerRow"><th>ویژگی‌ها</th><th>قالب 1</th></tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr><td>طول دوخت (Seam Length)</td></tr>
+      <tr><td>ضخامت دوخت (Seam Thickness)</td></tr>
+      <tr><td>قلاب درب (Cover Hook)</td></tr>
+      <tr><td>قلاب بدنه (Body Hook)</td></tr>
+      <tr><td>ضخامت ورق سر (End Thickness)</td></tr>
+      <tr><td>ضخامت ورق بدنه (Body Thickness)</td></tr>
+      <tr><td>اختلاف قلاب (Hook Difference)</td></tr>
+      <tr><td>فضای آزاد (Free Space)</td></tr>
+      <tr><td>درصد درگیری (Overlap %)</td></tr>
+      <tr><td>چروکیدگی قلاب درب</td></tr>
+      <tr><td>تیزکردگی دوخت</td></tr>
+    </tbody>
+  </table>
+
+  <div id="warnings"><strong>⚠️ موارد نیازمند اصلاح:</strong><ul id="warningList"></ul></div>
+</div>
+
+<div class="footer-buttons">
+  <button onclick="printReport()">🖨️ پرینت</button>
+  <button onclick="exportToExcel()">📤 خروجی Excel</button>
+  <button onclick="saveAsHTML()">💾 ذخیره HTML</button>
+  <button onclick="showHelp()">ℹ️ راهنما</button>
+</div>
+
+<div id="helpOverlay">
+  <div id="helpBox">
+    <h3>📘 راهنمای استفاده</h3>
+    <ul>
+      <li>1️⃣ مقادیر را بر حسب <b>0.001 اینچ</b> وارد کنید.</li>
+      <li>2️⃣ روی دکمه <b>محاسبه/جدید</b> کلیک کنید.</li>
+      <li>3️⃣ نتایج در جدول اضافه می‌شود و می‌توانید چاپ یا ذخیره کنید.</li>
+      <li>4️⃣ برای پاک کردن اطلاعات، کلید <b>F5</b> را فشار دهید.</li>
+      <li>5️⃣ اگر پیشنهادی برای بهبود برنامه دارید، لطفاً نظرتان را با ما در میان بگذارید ✅</li>
+    </ul>
+    <p style="font-size:13px; text-align:center; margin-top:5px;">
+      ✍️ تهیه‌کننده: <b>مصیب خانی</b><br>
+      📞 09173206052<br>
+      🛠️ نسخه 1.09
+    </p>
+    <button onclick="hideHelp()">بستن</button>
+  </div>
+</div>
+
+<script>
+let templateCount=1;
+
+function toMM(v){return v*0.0254;}
+function formatVal(v){return v.toFixed(2)+" ("+toMM(v).toFixed(2)+" mm)";}
+
+document.querySelectorAll(".input-row input").forEach(inp=>{
+  inp.addEventListener("input",updateProgress);
+});
+
+function updateProgress(){
+  const inputs=document.querySelectorAll(".input-row input");
+  let filled=[...inputs].filter(i=>i.value!=="").length;
+  document.getElementById("progress").style.width=(filled/inputs.length*100)+"%";
+}
+
+function addTemplate(){
+  const ids=['length','seamThickness','coverHook','bodyHook','headThickness','bodyThickness'];
+  const raw=ids.map(id=>parseFloat(document.getElementById(id).value));
+  if(raw.some(v=>isNaN(v)||v<0)){alert("لطفاً مقادیر معتبر وارد کنید");return;}
+
+  const [L,ST,CH,BH,Te,Tb]=raw;
+  const diff=Math.abs(CH-BH);
+  const free=Math.abs(ST-(3*Te+2*Tb));
+  const denom=L-(2.2*Te+1.1*Tb);
+  let overlap=denom!==0?Math.abs((L-(CH+BH+1.1*Te))/denom*100):0;
+
+  if(templateCount>1){
+    const th=document.createElement("th");
+    th.textContent="قالب "+templateCount;
+    document.getElementById("headerRow").appendChild(th);
+  }
+
+  const vals=[formatVal(L),formatVal(ST),formatVal(CH),formatVal(BH),formatVal(Te),formatVal(Tb),formatVal(diff),formatVal(free),overlap.toFixed(2),"-","-"];
+  document.querySelectorAll("#tableBody tr").forEach((r,i)=>{
+    const td=document.createElement("td");
+    td.textContent=vals[i];
+    r.appendChild(td);
+  });
+
+  const col=templateCount;
+  const rows=document.querySelectorAll("#tableBody tr");
+  const warns=[];
+  function mark(i,msg){ rows[i].children[col].style.background="#ffd2d2"; warns.push(msg); }
+
+  if(CH<70) mark(2,"قلاب درب کمتر از 70");
+  if(BH<70) mark(3,"قلاب بدنه کمتر از 70");
+  if(diff>7.8) mark(6,"اختلاف قلاب بیشتر از 7.8");
+  if(free>7.5) mark(7,"فضای آزاد بیشتر از 7.5");
+  if(overlap<45) mark(8,"درصد درگیری کمتر از 45٪");
+  if(overlap>90) mark(8,"درصد درگیری بیشتر از 90٪");
+
+  if(warns.length){
+    const li=document.createElement("li");
+    li.textContent="قالب "+col+": "+warns.join("، ");
+    document.getElementById("warningList").appendChild(li);
+  }
+
+  // پاک کردن همه به جز ضخامت سر و بدنه
+  document.getElementById("length").value="";
+  document.getElementById("seamThickness").value="";
+  document.getElementById("coverHook").value="";
+  document.getElementById("bodyHook").value="";
+  document.getElementById("length").focus();
+
+  updateProgress();
+  templateCount++;
+}
+
+function exportToExcel(){
+  const html=document.getElementById("resultsTable").outerHTML.replace(/ /g,"%20");
+  const a=document.createElement("a");
+  a.href=`data:application/vnd.ms-excel,${html}`;
+  a.download="تحلیل_درگیری.xls";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function saveAsHTML(){
+  const name=prompt("نام گزارشگر را وارد کنید:","مهندس خانی")||"مهندس خانی";
+  const date=new Date().toLocaleDateString("fa-IR");
+
+  const header=document.getElementById("printHeader");
+  header.style.display="flex";
+  document.getElementById("reporterName").textContent=name;
+  document.getElementById("analysisDate").textContent=date;
+  document.getElementById("containerSelected").textContent=document.getElementById("containerType").value;
+
+  // اضافه کردن ساختار کامل HTML با dir="rtl" و lang="fa"
+  const content = `
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>گزارش درصد درگیری</title>
+  <style>
+    body { font-family: Tahoma; direction: rtl; text-align: right; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #555; padding: 6px; text-align: center; }
+    th { background: #eef2f7; }
+    #printHeader { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
+    #printHeader div { width: 33%; text-align: center; }
+  </style>
+</head>
+<body>
+${document.getElementById("printArea").innerHTML}
+</body>
+</html>
+`;
+
+  const blob=new Blob([content],{type:"text/html"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`گزارش_${date}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  header.style.display="none";
+}
+
+
+function printReport(){
+  const name=prompt("نام گزارشگر را وارد کنید:","مهندس خانی")||"مهندس خانی";
+  const date=new Date().toLocaleDateString("fa-IR");
+
+  const header=document.getElementById("printHeader");
+  header.style.display="flex";
+  document.getElementById("reporterName").textContent=name;
+  document.getElementById("analysisDate").textContent=date;
+  document.getElementById("containerSelected").textContent=document.getElementById("containerType").value;
+
+  window.print();
+
+  header.style.display="none";
+}
+
+function showHelp(){
+  document.getElementById("helpOverlay").style.visibility="visible";
+}
+function hideHelp(){
+  document.getElementById("helpOverlay").style.visibility="hidden";
+}
+
+// حرکت بین فیلدها با Enter
+const inputs = document.querySelectorAll(".input-row input");
+inputs.forEach((input, index) => {
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault(); // جلوگیری از رفتار پیش‌فرض
+      if (index + 1 < inputs.length) {
+        inputs[index + 1].focus(); // رفتن به فیلد بعدی
+      } else {
+        document.querySelector(".input-row button").focus(); // اگر آخرین فیلد بود، روی دکمه برود
+      }
+    }
+  });
+});
+
+</script>
+</body>
+</html>
