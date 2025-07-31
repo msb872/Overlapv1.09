@@ -49,7 +49,23 @@
     @media print {
       body * { visibility: hidden; }
       #printArea, #printArea * { visibility: visible; }
-      #printArea { position:absolute; left:0; top:0; width:100%; padding:20px; }
+      #printFooter {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 12px;
+        border-top: 1px solid #aaa;
+        padding: 5px 0;
+        background: #fff;
+      }
+      #printArea {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+      }
     }
 
     #printHeader {
@@ -61,16 +77,20 @@
       border-bottom: 1px solid #999;
       padding-bottom: 8px;
     }
-    #printHeader div {
-      width: 33%;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    #printHeader div { width: 33%; text-align: center; }
   </style>
 </head>
 <body>
+
+<!-- پیام خوش آمد -->
+<div id="welcomeOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:11000;">
+  <div style="background:#fff;padding:20px;border-radius:12px;max-width:360px;text-align:center;">
+    <h2 style="color:#0077b6;margin-bottom:10px;">به برنامه خوش آمدید</h2>
+    <p>این نرم‌افزار توسط <strong>مصیب خانی</strong> طراحی شده است.<br>© 2025 کلیه حقوق برای کارخانه <strong>یک‌ویک</strong> محفوظ است.</p>
+    <button onclick="document.getElementById('welcomeOverlay').style.display='none'" style="background:#0077b6;color:#fff;border:none;padding:8px 20px;border-radius:6px;">شروع</button>
+  </div>
+</div>
+
 <header>
   <h2>برنامه محاسبه درصد درگیری قوطی فلزی v1.09</h2>
 </header>
@@ -80,18 +100,18 @@
 <div style="text-align:center; margin-bottom:8px;">
   <label>📦 نوع ظرف:
     <select id="containerType">
-        <option>قوطی 400 گرمی چاپدار</option>
-        <option>قوطی 420 گرمی چاپدار</option>
-        <option>قوطی 770 گرمی چاپدار</option>
-	<option>قوطی 800 گرمی چاپدار</option>
-	<option>قوطی 4000 گرمی چاپدار</option>
-	<option>قوطی 16 کیلویی چاپدار</option>
-        <option>قوطی 400 گرمی ساده</option>
-        <option>قوطی 420 گرمی ساده</option>
-        <option>قوطی 770 گرمی ساده</option>
-	<option>قوطی 800 گرمی ساده</option>
-	<option>قوطی 4000 گرمی ساده</option>
-	<option>قوطی 16 کیلویی ساده</option>
+      <option>قوطی 400 گرمی چاپدار</option>
+      <option>قوطی 420 گرمی چاپدار</option>
+      <option>قوطی 770 گرمی چاپدار</option>
+      <option>قوطی 800 گرمی چاپدار</option>
+      <option>قوطی 4000 گرمی چاپدار</option>
+      <option>قوطی 16 کیلویی چاپدار</option>
+      <option>قوطی 400 گرمی ساده</option>
+      <option>قوطی 420 گرمی ساده</option>
+      <option>قوطی 770 گرمی ساده</option>
+      <option>قوطی 800 گرمی ساده</option>
+      <option>قوطی 4000 گرمی ساده</option>
+      <option>قوطی 16 کیلویی ساده</option>
     </select>
   </label>
 </div>
@@ -106,9 +126,7 @@
   <button type="button" onclick="addTemplate()">➕ محاسبه/جدید</button>
 </div>
 
-<div class="progress-bar-container">
-  <div class="progress-bar" id="progress"></div>
-</div>
+<div class="progress-bar-container"><div class="progress-bar" id="progress"></div></div>
 
 <div id="printArea">
   <div id="printHeader" style="display:none;">
@@ -118,9 +136,7 @@
   </div>
 
   <table id="resultsTable">
-    <thead>
-      <tr id="headerRow"><th>ویژگی‌ها</th><th>قالب 1</th></tr>
-    </thead>
+    <thead><tr id="headerRow"><th>ویژگی‌ها</th><th>قالب 1</th></tr></thead>
     <tbody id="tableBody">
       <tr><td>طول دوخت (Seam Length)</td></tr>
       <tr><td>ضخامت دوخت (Seam Thickness)</td></tr>
@@ -139,6 +155,10 @@
   <div id="warnings"><strong>⚠️ موارد نیازمند اصلاح:</strong><ul id="warningList"></ul></div>
 </div>
 
+<div id="printFooter" style="display:none;text-align:center;font-size:12px;color:#666;margin-top:20px;border-top:1px solid #ccc;padding-top:8px;">
+  © ۲۰۲۵ کارخانه یک‌ویک | نویسنده: مصیب خانی
+</div>
+
 <div class="footer-buttons">
   <button onclick="printReport()">🖨️ پرینت</button>
   <button onclick="exportToExcel()">📤 خروجی Excel</button>
@@ -148,22 +168,38 @@
 
 <div id="helpOverlay">
   <div id="helpBox">
-    <h3>📘 راهنمای استفاده</h3>
-    <ul>
-      <li>1️⃣ مقادیر را بر حسب <b>0.001 اینچ</b> وارد کنید.</li>
-      <li>2️⃣ روی دکمه <b>محاسبه/جدید</b> کلیک کنید.</li>
-      <li>3️⃣ نتایج در جدول اضافه می‌شود و می‌توانید چاپ یا ذخیره کنید.</li>
-      <li>4️⃣ برای پاک کردن اطلاعات، کلید <b>F5</b> را فشار دهید.</li>
+    <h4>📘 راهنمای استفاده از نرم‌افزار</h4>
+    <ul style="text-align:right;line-height:1.8;font-size:12px;">
+      <li>✅ این نرم‌افزار برای محاسبه <b>درصد درگیری دوخت قوطی فلزی</b> طراحی شده است.</li>
+      <li>🔹 ابتدا <b>نوع ظرف</b> را از لیست انتخاب کنید.</li>
+      <li>🔹 مقادیر زیر را بر حسب <b>0.001 اینچ</b> وارد کنید:
+        <ul style="margin-right:20px;font-size:13px;">
+          <li>🔹 <b>طول دوخت (SL):</b> طول ناحیه دوخت.</li>
+          <li>🔹 <b>ضخامت دوخت (ST):</b> ضخامت کل دوخت.</li>
+          <li>🔹 <b>قلاب درب (CH):</b> میزان قلاب ورق درب.</li>
+          <li>🔹 <b>قلاب بدنه (BH):</b> میزان قلاب ورق بدنه.</li>
+          <li>🔹 <b>ضخامت ورق سر (Te):</b> ضخامت ورق قسمت درب.</li>
+          <li>🔹 <b>ضخامت ورق بدنه (Tb):</b> ضخامت ورق قسمت بدنه.</li>
+        </ul>
+      </li>
+      <li>✅ پس از تکمیل مقادیر، روی دکمه <b>➕ محاسبه/جدید</b> کلیک کنید.</li>
+      <li>📊 نتایج به جدول اضافه می‌شود و هر قالب (Template) در یک ستون نمایش داده خواهد شد.</li>
+      <li>⚠️ در صورتی که <b>درصد درگیری کمتر از ۴۵٪ یا بیشتر از ۹۰٪</b باشد، هشدار قرمز نمایش داده می‌شود.</li>
+      <li>🖨️ می‌توانید گزارش را <b>چاپ کنید</b> یا با فرمت <b>HTML / Excel</b> ذخیره نمایید.</li>
+      <li>🎯 با کلید Enter می‌توانید سریع‌تر بین فیلدها حرکت کنید.</li>
+      <li>🔄 برای پاک کردن ورودی‌ها، کلید <b>F5</b> را فشار دهید.</li>
       <li>5️⃣ اگر پیشنهادی برای بهبود برنامه دارید، لطفاً نظرتان را با ما در میان بگذارید ✅</li>
     </ul>
-    <p style="font-size:13px; text-align:center; margin-top:5px;">
-      ✍️ تهیه‌کننده: <b>مصیب خانی</b><br>
+    <hr>
+    <p style="font-size:12px;text-align:center;margin-top:2px;">
+      ✍️ تهیه‌کننده: <b>مصیب خانی کارشناس آزمایشگاه و کنترل کیفیت</b><br>
       📞 09173206052<br>
-      🛠️ نسخه 1.09
+      🏭 © ۲۰۲۵ تمامی حقوق محفوظ است – کارخانه یک‌ویک دشت مرغاب
     </p>
     <button onclick="hideHelp()">بستن</button>
   </div>
 </div>
+
 
 <script>
 let templateCount=1;
@@ -223,7 +259,6 @@ function addTemplate(){
     document.getElementById("warningList").appendChild(li);
   }
 
-  // پاک کردن همه به جز ضخامت سر و بدنه
   document.getElementById("length").value="";
   document.getElementById("seamThickness").value="";
   document.getElementById("coverHook").value="";
@@ -252,27 +287,19 @@ function saveAsHTML(){
   document.getElementById("analysisDate").textContent=date;
   document.getElementById("containerSelected").textContent=document.getElementById("containerType").value;
 
-  // اضافه کردن ساختار کامل HTML با dir="rtl" و lang="fa"
   const content = `
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>گزارش درصد درگیری</title>
-  <style>
-    body { font-family: Tahoma; direction: rtl; text-align: right; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #555; padding: 6px; text-align: center; }
-    th { background: #eef2f7; }
-    #printHeader { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-    #printHeader div { width: 33%; text-align: center; }
-  </style>
-</head>
-<body>
+<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>گزارش درصد درگیری</title>
+<style>
+body { font-family: Tahoma; direction: rtl; text-align: right; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #555; padding: 6px; text-align: center; }
+th { background: #eef2f7; }
+#printHeader { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
+#printFooter { text-align:center; margin-top:15px; border-top:1px solid #999; font-size:12px; padding-top:5px;}
+</style></head><body>
 ${document.getElementById("printArea").innerHTML}
-</body>
-</html>
-`;
+<div id="printFooter">© ۲۰۲۵ کارخانه یک‌ویک | نویسنده: مصیب خانی</div>
+</body></html>`;
 
   const blob=new Blob([content],{type:"text/html"});
   const url=URL.createObjectURL(blob);
@@ -285,7 +312,6 @@ ${document.getElementById("printArea").innerHTML}
   header.style.display="none";
 }
 
-
 function printReport(){
   const name=prompt("نام گزارشگر را وارد کنید:","مهندس خانی")||"مهندس خانی";
   const date=new Date().toLocaleDateString("fa-IR");
@@ -296,33 +322,29 @@ function printReport(){
   document.getElementById("analysisDate").textContent=date;
   document.getElementById("containerSelected").textContent=document.getElementById("containerType").value;
 
+  document.getElementById("printFooter").style.display="block";
   window.print();
-
+  document.getElementById("printFooter").style.display="none";
   header.style.display="none";
 }
 
-function showHelp(){
-  document.getElementById("helpOverlay").style.visibility="visible";
-}
-function hideHelp(){
-  document.getElementById("helpOverlay").style.visibility="hidden";
-}
+function showHelp(){document.getElementById("helpOverlay").style.visibility="visible";}
+function hideHelp(){document.getElementById("helpOverlay").style.visibility="hidden";}
 
-// حرکت بین فیلدها با Enter
+// حرکت با Enter
 const inputs = document.querySelectorAll(".input-row input");
 inputs.forEach((input, index) => {
   input.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
-      e.preventDefault(); // جلوگیری از رفتار پیش‌فرض
+      e.preventDefault();
       if (index + 1 < inputs.length) {
-        inputs[index + 1].focus(); // رفتن به فیلد بعدی
+        inputs[index + 1].focus();
       } else {
-        document.querySelector(".input-row button").focus(); // اگر آخرین فیلد بود، روی دکمه برود
+        document.querySelector(".input-row button").focus();
       }
     }
   });
 });
-
 </script>
 </body>
 </html>
